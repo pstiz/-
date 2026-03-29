@@ -1,0 +1,418 @@
+{
+  "info": {
+    "name": "Food Ordering System — My APIs",
+    "_postman_id": "food-ordering-my-apis-2024",
+    "description": "API tests สำหรับส่วนที่รับผิดชอบ: Login_admin, Login_cooks, register_cook, Login_customers, check_customers",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+
+    {
+      "name": "1. Admin — Login_admin.html",
+      "item": [
+
+        {
+          "name": "GET /admin/login — load page",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/admin/login",
+              "host": ["{{base}}"],
+              "path": ["admin", "login"]
+            },
+            "description": "โหลดหน้า login_admin → expect 200 + file: login_admin.html"
+          }
+        },
+
+        {
+          "name": "GET /password/:raw — generate hash (เซ็ต admin ครั้งแรก)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/password/1234",
+              "host": ["{{base}}"],
+              "path": ["password", "1234"]
+            },
+            "description": "สร้าง hashed password → expect 200 + text: hashed string"
+          }
+        },
+
+        {
+          "name": "✅ POST /admin/signin — success (200)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/admin/signin",
+              "host": ["{{base}}"],
+              "path": ["admin", "signin"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_id\": \"admin01\",\n  \"password\": \"1234\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 200 → text: redirect path เช่น '/admin/dashboard.html'"
+          }
+        },
+
+        {
+          "name": "❌ POST /admin/signin — wrong password (401)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/admin/signin",
+              "host": ["{{base}}"],
+              "path": ["admin", "signin"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_id\": \"admin01\",\n  \"password\": \"wrongpass\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 401 → text: 'Wrong name' or 'Wrong ID'"
+          }
+        },
+
+        {
+          "name": "GET /admin/logout",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/admin/logout",
+              "host": ["{{base}}"],
+              "path": ["admin", "logout"]
+            },
+            "description": "expect 200 → file: login_admin.html"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "2. Cooks — register_cook.html",
+      "item": [
+
+        {
+          "name": "GET /cooks/register — load page",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/cooks/register",
+              "host": ["{{base}}"],
+              "path": ["cooks", "register"]
+            },
+            "description": "โหลดหน้า register → expect 200 + file: register.html"
+          }
+        },
+
+        {
+          "name": "✅ POST /cooks/register — success (200)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/cooks/register",
+              "host": ["{{base}}"],
+              "path": ["cooks", "register"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cook_id\": \"C001\",\n  \"name\": \"John Cook\",\n  \"password\": \"securepass123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 200 → text: 'Registered'"
+          }
+        },
+
+        {
+          "name": "❌ POST /cooks/register — ID duplicate (409)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/cooks/register",
+              "host": ["{{base}}"],
+              "path": ["cooks", "register"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cook_id\": \"C001\",\n  \"name\": \"Another Cook\",\n  \"password\": \"anotherpass\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 409 → text: 'ID already exists'"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "3. Cooks — Login_cooks.html",
+      "item": [
+
+        {
+          "name": "GET /cooks/login — load page",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/cooks/login",
+              "host": ["{{base}}"],
+              "path": ["cooks", "login"]
+            },
+            "description": "โหลดหน้า login → expect 200 + file: login_cooks.html"
+          }
+        },
+
+        {
+          "name": "✅ POST /cooks/login — success (200)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/cooks/login",
+              "host": ["{{base}}"],
+              "path": ["cooks", "login"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cook_id\": \"C001\",\n  \"password\": \"securepass123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 200 → text: redirect path เช่น '/cooks/dashboard.html'"
+          }
+        },
+
+        {
+          "name": "❌ POST /cooks/login — wrong password (401)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/cooks/login",
+              "host": ["{{base}}"],
+              "path": ["cooks", "login"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cook_id\": \"C001\",\n  \"password\": \"wrongpassword\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 401 → text: 'Wrong password'"
+          }
+        },
+
+        {
+          "name": "❌ POST /cooks/login — ID not found (401)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/cooks/login",
+              "host": ["{{base}}"],
+              "path": ["cooks", "login"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cook_id\": \"NOTEXIST\",\n  \"password\": \"securepass123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 401 → text: 'Wrong ID'"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "4. Customers — Login_customers.html",
+      "item": [
+
+        {
+          "name": "GET /customers/login — load page",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/customers/login",
+              "host": ["{{base}}"],
+              "path": ["customers", "login"]
+            },
+            "description": "โหลดหน้า login → expect 200 + file: login_customers.html"
+          }
+        },
+
+        {
+          "name": "✅ POST /customers/login — success (200)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/customers/login",
+              "host": ["{{base}}"],
+              "path": ["customers", "login"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"Alice\",\n  \"table_number\": 4\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 200 → text: redirect เช่น 'Menu_customers.html'"
+          }
+        },
+
+        {
+          "name": "❌ POST /customers/login — missing fields (400)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base}}/customers/login",
+              "host": ["{{base}}"],
+              "path": ["customers", "login"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "expect 400 → text: 'Missing username or table'"
+          }
+        },
+
+        {
+          "name": "GET /customers/logout",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/customers/logout",
+              "host": ["{{base}}"],
+              "path": ["customers", "logout"]
+            },
+            "description": "expect 200 → file: login_customers.html"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "5. Customers — check_customers.html",
+      "item": [
+
+        {
+          "name": "GET /customers/orders — load page",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/customers/orders",
+              "host": ["{{base}}"],
+              "path": ["customers", "orders"]
+            },
+            "description": "โหลดหน้า check → expect 200 + file: check_customers.html"
+          }
+        },
+
+        {
+          "name": "✅ GET /customers/orders?table=4 — get all orders (200)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/customers/orders?table=4",
+              "host": ["{{base}}"],
+              "path": ["customers", "orders"],
+              "query": [
+                { "key": "table", "value": "4" }
+              ]
+            },
+            "description": "expect 200 → JSON array [{ order_id, table_number, menu_id, quantity, status }]"
+          }
+        },
+
+        {
+          "name": "✅ GET /customers/orders?table=4&status=pending — filter pending",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/customers/orders?table=4&status=pending",
+              "host": ["{{base}}"],
+              "path": ["customers", "orders"],
+              "query": [
+                { "key": "table", "value": "4" },
+                { "key": "status", "value": "pending" }
+              ]
+            },
+            "description": "expect 200 → JSON array เฉพาะ status=pending"
+          }
+        },
+
+        {
+          "name": "❌ GET /customers/orders — missing table param (400)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/customers/orders",
+              "host": ["{{base}}"],
+              "path": ["customers", "orders"]
+            },
+            "description": "expect 400 → text: 'Missing table parameter'"
+          }
+        },
+
+        {
+          "name": "✅ GET /customers/orders/101 — get order detail (200)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/customers/orders/101",
+              "host": ["{{base}}"],
+              "path": ["customers", "orders", "101"]
+            },
+            "description": "expect 200 → JSON { order_id, table_number, menu_name, quantity, status }"
+          }
+        },
+
+        {
+          "name": "❌ GET /customers/orders/99999 — not found (404)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/customers/orders/99999",
+              "host": ["{{base}}"],
+              "path": ["customers", "orders", "99999"]
+            },
+            "description": "expect 404 → text: 'Order not found'"
+          }
+        }
+
+      ]
+    }
+
+  ]
+}

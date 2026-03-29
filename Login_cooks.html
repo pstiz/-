@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Cook Sign In</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-base-100 min-h-screen flex flex-col">
+
+    <!-- NAVBAR -->
+    <div class="navbar bg-base-100 border-b border-base-200 px-4 md:px-10">
+      <div class="flex-1 flex items-center gap-2">
+        <span class="text-xl">✦</span>
+        <span class="font-bold text-base md:text-lg">Food ordering system</span>
+      </div>
+      <div class="flex-none">
+        <button class="btn btn-outline btn-sm rounded-xl text-sm"
+                onclick="window.location.href='/public/index.html'">
+          back to Home
+        </button>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="flex flex-1 items-center justify-center px-4 py-12">
+      <div class="w-full max-w-md">
+        <h1 class="text-3xl font-bold mb-8">Welcome</h1>
+
+        <!-- cook_id -->
+        <div class="mb-5">
+          <label class="block text-sm font-medium mb-1">Name</label>
+          <input id="cook_id" type="text" placeholder="Enter your name"
+                 class="input input-bordered w-full rounded-lg text-sm" />
+        </div>
+
+        <!-- password -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium mb-1">Password</label>
+          <input id="password" type="password" placeholder="Enter your password"
+                 class="input input-bordered w-full rounded-lg text-sm" />
+        </div>
+
+        <button id="submitBtn" onclick="doLogin()"
+                class="btn w-full rounded-lg text-white font-semibold text-base"
+                style="background-color:#1AC8DB; border:none;">
+          Sign up
+        </button>
+
+        <div class="divider text-xs text-base-content/40 my-5">Or</div>
+
+        <p class="text-center text-sm text-base-content/70">
+          Have an account?&nbsp;
+          <a href="register_cook.html" class="font-semibold" style="color:#1ac8db;">register</a>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:3000';
+
+      async function doLogin() {
+        const cook_id  = document.getElementById('cook_id').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!cook_id || !password) {
+          Swal.fire({ icon:'warning', title:'Incomplete',
+            text:'Please fill in all fields',
+            confirmButtonColor:'#1AC8DB', confirmButtonText:'OK' });
+          return;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span>';
+
+        try {
+          // POST /cooks/login  →  body: { cook_id, password }
+          const res = await fetch(`${API_BASE}/cooks/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cook_id, password })
+          });
+          const text = await res.text();
+
+          if (res.ok) {
+            sessionStorage.setItem('cook_id', cook_id);
+            await Swal.fire({ icon:'success', title:`Welcome, ${cook_id}!`,
+              text:'Sign in successful',
+              confirmButtonColor:'#1AC8DB', confirmButtonText:'Continue',
+              timer:2000, timerProgressBar:true });
+            window.location.href = text.trim() || 'Dashdoard_cook.html';
+
+          } else if (res.status === 401) {
+            Swal.fire({ icon:'error', title:'Login Failed', text: text,
+              confirmButtonColor:'#1AC8DB', confirmButtonText:'Try Again' });
+
+          } else {
+            Swal.fire({ icon:'error', title:'Server Error',
+              text:'Something went wrong. Please try again later.',
+              confirmButtonColor:'#1AC8DB', confirmButtonText:'OK' });
+          }
+
+        } catch {
+          Swal.fire({ icon:'error', title:'Connection Error',
+            text:'Cannot connect to server.',
+            confirmButtonColor:'#1AC8DB', confirmButtonText:'OK' });
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = 'Sign up';
+        }
+      }
+
+      document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    </script>
+  </body>
+</html>

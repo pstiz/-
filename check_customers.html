@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Ordering System</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body class="bg-base-100 min-h-screen">
+
+    <!-- NAVBAR -->
+    <div class="navbar bg-base-100 border-b border-base-200 px-4 md:px-10">
+      <div class="flex-1 flex items-center gap-2">
+        <span class="text-xl">✦</span>
+        <span class="font-bold text-base md:text-lg">Food ordering system</span>
+      </div>
+      <div class="flex-none">
+        <button class="btn btn-outline btn-sm rounded-xl text-sm"
+                onclick="window.location.href='/public/customers/Login_customers.html'">
+          back to login
+        </button>
+      </div>
+    </div>
+
+    <!-- USER INFO BAR -->
+    <div class="flex justify-center px-4 mt-4">
+      <div class="w-full max-w-lg flex items-center gap-3">
+        <div class="avatar placeholder">
+          <div class="bg-base-200 text-base-content rounded-full w-9">
+            <span class="text-base font-bold" id="userInitial">?</span>
+          </div>
+        </div>
+        <div>
+          <p id="displayName" class="font-semibold text-sm">-</p>
+          <p id="displayTable" class="text-xs text-base-content/50">-</p>
+        </div>
+        <!-- auto-refresh badge -->
+        <div class="ml-auto flex items-center gap-1 text-xs text-base-content/40">
+          <span class="loading loading-ring loading-xs" style="color:#1ac8db"></span>
+          <span>live</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PILL TABS -->
+    <div class="flex justify-center mt-4 px-4">
+      <div class="flex bg-base-100 rounded-full p-1.5 gap-1 overflow-x-auto w-full max-w-lg shadow-lg">
+        <a href="/public/customers/Menu_customers.html"
+           class="flex-1 min-w-max text-center text-sm font-medium text-base-content/50
+                  rounded-full px-5 py-2 hover:bg-base-300 transition-colors cursor-pointer">
+          menu
+        </a>
+        <a href="/public/customers/capt_customers.html"
+           class="flex-1 min-w-max text-center text-sm font-medium text-base-content/50
+                  rounded-full px-5 py-2 hover:bg-base-300 transition-colors cursor-pointer">
+          cart
+        </a>
+        <span class="flex-1 min-w-max text-center text-sm font-semibold text-white
+                     rounded-full px-5 py-2 cursor-default"
+              style="background-color:#1ac8db;">
+          check
+        </span>
+        <a href="/public/customers/PAYMENT.html"
+           class="flex-1 min-w-max text-center text-sm font-medium text-base-content/50
+                  rounded-full px-5 py-2 hover:bg-base-300 transition-colors cursor-pointer">
+          payment
+        </a>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="flex flex-col items-center w-full px-4 mt-6 pb-16">
+      <div class="w-full max-w-lg">
+
+        <h2 class="text-2xl md:text-3xl font-bold mb-5">Waiting</h2>
+
+        <!-- skeleton on first load -->
+        <div id="orderList" class="flex flex-col gap-3">
+          <div class="skeleton h-14 rounded-2xl w-full"></div>
+          <div class="skeleton h-14 rounded-2xl w-full"></div>
+          <div class="skeleton h-14 rounded-2xl w-full"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      const API_BASE      = 'http://localhost:3000';
+      const POLL_INTERVAL = 5000;   // refresh every 5 s
+      let   pollTimer     = null;
+
+      // ── init ──
+      window.onload = () => {
+        const name  = sessionStorage.getItem('username') || 'Guest';
+        const table = sessionStorage.getItem('table')    || '-';
+        document.getElementById('displayName').textContent  = name;
+        document.getElementById('displayTable').textContent = 'Table ' + table;
+        document.getElementById('userInitial').textContent  = name.charAt(0).toUpperCase();
+        fetchOrders();
+        pollTimer = setInterval(fetchOrders, POLL_INTERVAL);
+      };
+
+      // ── GET /customers/orders?table=N ──
+      async function fetchOrders() {
+        const table = sessionStorage.getItem('table');
+        try {
+          const res = await fetch(`${API_BASE}/customers/orders?table=${table}`);
+          if (!res.ok) throw new Error(res.status);
+          const orders = await res.json();
+          // expected: [{ order_id, table_number, menu_id, quantity, status }, ...]
+          renderOrders(orders);
+        } catch {
+          const el = document.getElementById('orderList');
+          if (el.querySelector('.skeleton')) {
+            el.innerHTML = `
+              <div class="text-center py-16 text-base-content/40">
+                <div class="text-5xl mb-3">⚠️</div>
+                <p class="text-sm">Cannot load orders. Check your connection.</p>
+                <button onclick="fetchOrders()"
+                        class="btn btn-sm mt-4 rounded-full text-white"
+                        style="background:#1ac8db;border:none;">Retry</button>
+              </div>`;
+          }
+        }
+      }
+
+      function renderOrders(orders) {
+        const el = document.getElementById('orderList');
+        if (!orders || !orders.length) {
+          el.innerHTML = `
+            <div class="text-center py-16 text-base-content/40">
+              <div class="text-5xl mb-3">📋</div>
+              <p class="text-sm">No orders yet</p>
+            </div>`;
+          return;
+        }
+        el.innerHTML = orders.map(o => `
+          <div class="card bg-base-200 rounded-2xl">
+            <div class="card-body flex-row items-center justify-between p-4 md:p-5">
+              <span class="font-semibold text-sm md:text-base">
+                ${o.menu_name ?? 'Menu #' + o.menu_id}
+                <span class="text-base-content/40 text-xs ml-1">×${o.quantity}</span>
+              </span>
+              <span class="font-semibold text-sm ${o.status === 'done' ? 'text-success' : 'text-warning'}">
+                ${o.status === 'done' ? 'Done' : 'Pending'}
+              </span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      window.addEventListener('beforeunload', () => { if (pollTimer) clearInterval(pollTimer); });
+    </script>
+  </body>
+</html>
